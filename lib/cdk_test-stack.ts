@@ -1,16 +1,21 @@
-import * as cdk from 'aws-cdk-lib';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Stack, StackProps, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { ServerlessClamscan } from 'cdk-serverless-clamscan';
 
-export class CdkTestStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class SCRProdStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
-
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'CdkTestQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const sc = new ServerlessClamscan(this, 'rClamscan', {});
+    const bucket = new Bucket(this, 'rBucket', {
+      bucketName: 'scr-prod-bucket-8068231397', // Specify your bucket name here
+      autoDeleteObjects: true,
+      removalPolicy: RemovalPolicy.DESTROY
+    });
+    sc.addSourceBucket(bucket);
+    new CfnOutput(this, 'oBucketName', {
+      description: 'The name of the input S3 Bucket',
+      value: bucket.bucketName
+    })
   }
 }
